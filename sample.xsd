@@ -1,0 +1,115 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xs:annotation>
+		<xs:documentation>There are 2 types of funds in Alma: 1.Summary fund -
+			A fund that is not used for ordering and invoicing, but provides
+			aggregate reporting on subordinate funds.
+			You can add other funds to this type of fund.
+			2. Allocated fund - A fund that contains money that has been paid out
+			or has been reserved for an open purchase.
+		</xs:documentation>
+	</xs:annotation>
+
+	<xs:element name="fund" type="fund" />
+
+	<xs:complexType name="fund">
+		<xs:annotation>
+			<xs:documentation>Fund Object.</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="code" type="xs:string" minOccurs="1"
+				maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<xs:tags>api get post put</xs:tags>
+					</xs:appinfo>
+					<xs:documentation>The fund code. Mandatory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="0"
+				maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<xs:tags>api get post put</xs:tags>
+					</xs:appinfo>
+					<xs:documentation>The fund name.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="external_id" type="xs:string" minOccurs="0"
+				maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<xs:tags>api get post put</xs:tags>
+					</xs:appinfo>
+					<xs:documentation>The ID that is used to link to other system keys.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="status" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<xs:tags>api get post put</xs:tags>
+						<xs:codeTable>HfundLedger.status</xs:codeTable>
+					</xs:appinfo>
+					<xs:documentation>The status of the fund. Possible codes are listed
+						in 'FundLedger Search Status Filter' code table.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="desc" type="xs:string" use="optional" />
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="0"
+				maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<xs:tags>api get post put</xs:tags>
+					</xs:appinfo>
+					<xs:documentation>General description of the fund.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fiscal_period" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<xs:tags>api get post put</xs:tags>
+					</xs:appinfo>
+					<xs:documentation>The financial year to which the fund applies.
+						Mandatory. Possible codes are according to the
+						'FundLedgerFiscalPeriodTable' mapping table (Acquisitions
+						Configuration menu - Fund and Ledger Fiscal Period).
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="desc" type="xs:string" use="optional" />
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="currency" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:appinfo>
+						<xs:codeTable>Currency_CT</xs:codeTable>
+					</xs:appinfo>
+					<xs:documentation>The fund's related currency. Possible values are
+						listed in 'Currency Code Table' code table.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="desc" type="xs:string" use="optional" />
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+		<xs:attribute name="link" type="xs:string" use="optional" />
+	</xs:complexType>
+</xs:schema>

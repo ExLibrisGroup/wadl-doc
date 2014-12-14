@@ -106,7 +106,21 @@
 									POST</li> </ul> </div> -->
 
 							</div>
-							<p><xsl:value-of select="wadl:doc"/></p>
+							<p>
+								<xsl:variable name="with_new_lines">
+									<xsl:call-template name="string-replace-all">
+										<xsl:with-param name="text" select="wadl:doc" />
+										<xsl:with-param name="replace" select="'&#xA;'" />
+										<xsl:with-param name="by" select="'new_line'" />
+									</xsl:call-template>
+								</xsl:variable>
+								<xsl:variable name="with_links">
+									<xsl:call-template name="create-links">
+										<xsl:with-param name="text" select="$with_new_lines" />
+									</xsl:call-template>
+								</xsl:variable>
+								<xsl:copy-of select="$with_links" />
+							</p>
 
         					<h5 id="resourceURL">Resource URL</h5>
 							<pre>
@@ -261,26 +275,79 @@
 	    </xsl:choose>
 	</xsl:template>
 
-  <!-- From http://geekswithblogs.net/Erik/archive/2008/04/01/120915.aspx -->
-  <xsl:template name="string-replace-all">
-    <xsl:param name="text" />
-    <xsl:param name="replace" />
-    <xsl:param name="by" />
-    <xsl:choose>
-      <xsl:when test="contains($text, $replace)">
-        <xsl:value-of select="substring-before($text,$replace)" />
-        <xsl:value-of select="$by" />
-        <xsl:call-template name="string-replace-all">
-          <xsl:with-param name="text"
-          select="substring-after($text,$replace)" />
-          <xsl:with-param name="replace" select="$replace" />
-          <xsl:with-param name="by" select="$by" />
-        </xsl:call-template>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$text" />
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+<!-- Changing [here|http://a.com] to <a href="http://a.com">here</a> and
+		[http://a.com] to <a href="http://a.com">http://a.com</a>
+		Note that only one link can be used-->
+	<xsl:template name="create-links">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="contains($text, 'http')">
+
+				<xsl:copy-of select="substring-before($text,'[')" />
+
+				<xsl:variable name="the_link_and_after">
+					<xsl:copy-of select="substring-after($text,'[')" />
+				</xsl:variable>
+
+				<xsl:variable name="the_link">
+					<xsl:value-of select="substring-before($the_link_and_after,']')" />
+				</xsl:variable>
+
+				<xsl:choose>
+					<xsl:when test="contains($the_link,'|')">
+						<xsl:variable name="the_url">
+							<xsl:value-of select="substring-after($the_link,'|')" />
+						</xsl:variable>
+						<a href="{$the_url}">
+							<xsl:value-of select="substring-before($the_link,'|')" />
+						</a>
+					</xsl:when>
+					<xsl:otherwise>
+						<a href="{$the_link}">
+							<xsl:value-of select="$the_link" />
+						</a>
+					</xsl:otherwise>
+				</xsl:choose>
+
+				<xsl:copy-of select="substring-after($text,']')" />
+
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:copy-of select="$text" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+  <!-- Replace all. To replace \n by <br> use: replace="'&#xA;'" by="'new_line'" -->
+	<xsl:template name="string-replace-all">
+		<xsl:param name="text" />
+		<xsl:param name="replace" />
+		<xsl:param name="by" />
+
+		<xsl:choose>
+			<xsl:when test="contains($text, $replace)">
+				<xsl:copy-of select="substring-before($text,$replace)" />
+
+				<xsl:choose>
+					<xsl:when test="$by='new_line'">
+						<br />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$by" />
+					</xsl:otherwise>
+				</xsl:choose>
+
+				<xsl:call-template name="string-replace-all">
+					<xsl:with-param name="text"
+						select="substring-after($text,$replace)" />
+					<xsl:with-param name="replace" select="$replace" />
+					<xsl:with-param name="by" select="$by" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:copy-of select="$text" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
 
 </xsl:stylesheet>

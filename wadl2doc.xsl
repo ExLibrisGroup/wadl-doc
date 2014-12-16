@@ -107,19 +107,9 @@
 
 							</div>
 							<p>
-								<xsl:variable name="with_new_lines">
-									<xsl:call-template name="string-replace-all">
-										<xsl:with-param name="text" select="wadl:doc" />
-										<xsl:with-param name="replace" select="'&#xA;'" />
-										<xsl:with-param name="by" select="'new_line'" />
-									</xsl:call-template>
-								</xsl:variable>
-								<xsl:variable name="with_links">
-									<xsl:call-template name="create-links">
-										<xsl:with-param name="text" select="$with_new_lines" />
-									</xsl:call-template>
-								</xsl:variable>
-								<xsl:copy-of select="$with_links" />
+								<xsl:call-template name="create-lines">
+									<xsl:with-param name="text" select="wadl:doc" />
+								</xsl:call-template>
 							</p>
 
         					<h5 id="resourceURL">Resource URL</h5>
@@ -350,4 +340,64 @@
 		</xsl:choose>
 	</xsl:template>
 
+<!-- Changing [here|http://a.com] to <a href="http://a.com">here</a> and
+		\b by <br/> -->
+	<xsl:template name="create-lines">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="contains($text, '&#xA;')">
+				<xsl:call-template name="create-links">
+					<xsl:with-param name="text"
+						select="substring-before($text,'&#xA;')" />
+				</xsl:call-template>
+				<br />
+				<xsl:call-template name="create-lines">
+					<xsl:with-param name="text"
+						select="substring-after($text,'&#xA;')" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="create-links">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name="create-links">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="contains($text, 'http')">
+				<xsl:copy-of select="substring-before($text,'[')" />
+				<xsl:variable name="the_link_and_after">
+					<xsl:copy-of select="substring-after($text,'[')" />
+				</xsl:variable>
+				<xsl:variable name="the_link">
+					<xsl:copy-of select="substring-before($the_link_and_after,']')" />
+				</xsl:variable>
+				<xsl:choose>
+					<xsl:when test="contains($the_link,'|')">
+						<xsl:variable name="the_url">
+							<xsl:copy-of select="substring-after($the_link,'|')" />
+						</xsl:variable>
+						<a href="{$the_url}">
+							<xsl:copy-of select="substring-before($the_link,'|')" />
+						</a>
+					</xsl:when>
+					<xsl:otherwise>
+						<a href="{$the_link}">
+							<xsl:copy-of select="$the_link" />
+						</a>
+					</xsl:otherwise>
+				</xsl:choose>
+				<xsl:call-template name="create-links">
+					<xsl:with-param name="text" select="substring-after($text,']')" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:copy-of select="$text" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
 </xsl:stylesheet>
